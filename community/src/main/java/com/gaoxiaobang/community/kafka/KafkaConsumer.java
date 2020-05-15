@@ -11,12 +11,13 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.KafkaListeners;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 @Service
 @Log
 public class KafkaConsumer {
     @Autowired
     private UploadHeadService uploadHeadService;
-
     @KafkaListener(topics = {"message","comment","like"})//message表示回复了你的帖子，comment表示回复了你的评论，like表示点赞
     public void messageListener(ConsumerRecord<?,?> consumerRecord){
         if (consumerRecord.value()==null){
@@ -42,8 +43,11 @@ public class KafkaConsumer {
             log.warning("主题错误！");
             return;
         }
-        MailExecute mailExecute =  JSONUtil.Parse((String)consumerRecord.value(),MailExecute.class);
-            mailExecute.execute();
+        String value = (String)consumerRecord.value();
+        Execute execute = DefaultExecute.getExecute(value);
+        if(execute!=null){
+            execute.execute();
+        }
     }
     @KafkaListener(topics ={EventType.UPLAOD},properties = {"max.poll.interval.ms:30000"})
     public void upload(ConsumerRecord consumerRecord){

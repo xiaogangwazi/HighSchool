@@ -14,7 +14,7 @@ public class KafkaProductor {
     private KafkaTemplate kafkaTemplate;
 
     public void mailSend(MailExecute mailExecute ,String eventType){
-        kafkaTemplate.send(eventType,JSONUtil.toJsonString(mailExecute));
+        kafkaTemplate.send(eventType,mailExecute.getMail().getTo());
     }
     public void uplaod(UploadHeadExecute uploadHeadExecute,String eventType){
         kafkaTemplate.send(eventType,uploadHeadExecute.getFileDir());

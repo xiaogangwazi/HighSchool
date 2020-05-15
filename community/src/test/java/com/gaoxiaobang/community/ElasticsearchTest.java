@@ -51,7 +51,7 @@ public class ElasticsearchTest {
     }
     @Test
     public void testsearch(){
-            messagePostRepository.search(QueryBuilders.matchQuery())
+
         Page<Message> messagePage = messageSearch.search("篮球", 0, 10);
         for(Message message:messagePage.getContent()){
             System.out.println(message.toString());

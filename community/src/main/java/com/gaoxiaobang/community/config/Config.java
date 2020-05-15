@@ -15,6 +15,7 @@ import org.springframework.boot.autoconfigure.transaction.TransactionManagerCust
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
@@ -30,7 +31,7 @@ import java.util.Properties;
 @Configuration
 public class Config extends WebMvcConfigurerAdapter {
     @Value("${git.username}")
-    private String username;
+    public  String username;
     @Value("${git.password}")
     private String password;
     @Value("${git.repository}")
@@ -86,7 +87,7 @@ public class Config extends WebMvcConfigurerAdapter {
      *
      * @return
      */
-    @Bean
+    @Bean("credentialsProvider")
     public CredentialsProvider createCredentialsProvider(){
       return   GitUtil.createCredential(username,password);
     }

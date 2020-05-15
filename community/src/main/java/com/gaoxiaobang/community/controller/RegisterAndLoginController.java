@@ -6,6 +6,7 @@ import com.gaoxiaobang.community.common.ResponseType;
 import com.gaoxiaobang.community.entity.Mail;
 import com.gaoxiaobang.community.entity.UserPassword;
 import com.gaoxiaobang.community.entity.Userinfo;
+import com.gaoxiaobang.community.kafka.DefaultExecute;
 import com.gaoxiaobang.community.kafka.EventType;
 import com.gaoxiaobang.community.kafka.KafkaProductor;
 import com.gaoxiaobang.community.kafka.MailExecute;
@@ -17,6 +18,7 @@ import com.gaoxiaobang.community.service.userinfo.UserInfoService;
 import com.jcraft.jsch.UserInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -38,6 +40,10 @@ public class RegisterAndLoginController {
     private RedisTemplate redisTemplate;
     @Autowired
     private KafkaProductor kafkaProductor;
+    @Autowired
+    private MailExecute mailExecute;
+    @Value("${gitpage.location}")
+    private String location;
 
     /**
      * 功能：注册
@@ -71,6 +77,7 @@ public class RegisterAndLoginController {
         String salt = CommunityUtil.generatorUUID4();
         userinfo.setScore(100);
         userinfo.setCreateTime(new Date());
+
         userInfoService.insert(userinfo);
         UserPassword userPassword= new UserPassword();
         userPassword.setUserid(userinfo.getId());
@@ -82,7 +89,9 @@ public class RegisterAndLoginController {
         mail.setTo(userinfo.getEmail());
         mail.setSubject("高校帮注册");
         mail.setSentDate(new Date());
-        MailExecute mailExecute = new MailExecute(mail, EventType.MAIL);
+        mailExecute.setMail(mail);
+        mailExecute.setEventType(EventType.MAIL);
+
         mailExecute.onSuccess((r)->{
             System.out.println("注册邮件已发送");
             Userinfo userInfo = (Userinfo)r;
@@ -91,6 +100,7 @@ public class RegisterAndLoginController {
         mailExecute.onError(error->{
             System.out.println("邮件发送错误："+error);
         });
+        DefaultExecute.addExecute(mail.getTo(),mailExecute);
         kafkaProductor.mailSend(mailExecute,EventType.MAIL);
         ResponseType responseType = new ResponseType(200,"ok");
         return responseType;
@@ -113,6 +123,7 @@ public class RegisterAndLoginController {
             Userinfo userinfo = new Userinfo();
             userinfo.setStatue((byte) 1);
             userinfo.setId(id);
+            userinfo.setHeadurl(location+"/"+userinfo.getId()+".jpg");
             userInfoService.updateStatueByPrimaryKey(userinfo);
             redisTemplate.opsForValue().set(RedisKeys.REGISTER_KEY+id,"1");
         }
