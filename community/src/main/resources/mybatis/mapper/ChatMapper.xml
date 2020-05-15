@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaoxiaobang.community.dao.ChatMapper">
+  <resultMap id="BaseResultMap" type="com.gaoxiaobang.community.entity.Chat">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="fromid" jdbcType="INTEGER" property="fromid" />
+    <result column="toid" jdbcType="INTEGER" property="toid" />
+    <result column="conversationid" jdbcType="VARCHAR" property="conversationid" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+    <result column="type" jdbcType="TINYINT" property="type" />
+    <result column="photo" jdbcType="VARCHAR" property="photo" />
+    <result column="time" jdbcType="TIMESTAMP" property="time" />
+    <result column="statue" jdbcType="TINYINT" property="statue" />
+    <result column="step" jdbcType="TINYINT" property="step" />
+    <association property="fromuser" select="com.gaoxiaobang.community.dao.UserinfoMapper.selectByPrimaryKey" column="fromid"/>
+    <association property="touser" select="com.gaoxiaobang.community.dao.UserinfoMapper.selectByPrimaryKey" column="toid"/>
+  </resultMap>
+  <update id="setStepList" parameterType="java.util.List">
+    <foreach collection="list" index="0" item="item" separator=";">
+      update chat set step =2 where id = #{item}
+    </foreach>
+  </update>
+  <select id="getChatList" parameterType="java.lang.Integer" resultType="java.lang.String">
+    select distinct conversationid from chat where  fromid = #{userid} or toid = #{userid}
+    group by conversationid
+  </select>
+  <select id="getUnreadCount"  resultType="java.lang.Integer">
+    select count(*) from chat where  conversationid = #{conversationid} and statue =0 and fromid = #{fromid} and toid = #{toid} and
+    step = 1
+  </select>
+  <select id="selectChatConversation" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select id, fromid, toid, conversationid, content, `type`, photo, `time`, statue,step
+        from chat
+        where conversationid= #{conversationid} and statue =0
+        order by `time`
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from chat
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.gaoxiaobang.community.entity.Chat">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into chat (fromid, toid, conversationid, 
+      content, `type`, photo, 
+      `time`, statue,step)
+    values (#{fromid,jdbcType=INTEGER}, #{toid,jdbcType=INTEGER}, #{conversationid,jdbcType=VARCHAR}, 
+      #{content,jdbcType=VARCHAR}, #{type,jdbcType=TINYINT}, #{photo,jdbcType=VARCHAR}, 
+      #{time,jdbcType=TIMESTAMP}, #{statue,jdbcType=TINYINT},#{step,jdbcType=TINYINT})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.gaoxiaobang.community.entity.Chat">
+    update chat
+    set fromid = #{fromid,jdbcType=INTEGER},
+      toid = #{toid,jdbcType=INTEGER},
+      conversationid = #{conversationid,jdbcType=VARCHAR},
+      content = #{content,jdbcType=VARCHAR},
+      `type` = #{type,jdbcType=TINYINT},
+      photo = #{photo,jdbcType=VARCHAR},
+      `time` = #{time,jdbcType=TIMESTAMP},
+      statue = #{statue,jdbcType=TINYINT}.
+      step = #{step ,jdbcType=TINYINT}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="setStep" parameterType="java.lang.Integer">
+    update chat
+    set step=#{step}
+    where id=#{id}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select id, fromid, toid, conversationid, content, `type`, photo, `time`, statue,step
+    from chat
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id, fromid, toid, conversationid, content, `type`, photo, `time`, statue,step
+    from chat
+  </select>
+</mapper>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaoxiaobang.community.dao.NoticeMapper">
+  <resultMap id="BaseResultMap" type="com.gaoxiaobang.community.entity.Notice">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="message" jdbcType="VARCHAR" property="message" />
+    <result column="targetid" jdbcType="INTEGER" property="targetid" />
+    <result column="type" jdbcType="TINYINT" property="type" />
+    <result column="time" jdbcType="TIMESTAMP" property="time" />
+    <result column="statue" jdbcType="TINYINT" property="statue" />
+    <result column="url" jdbcType="VARCHAR" property="url"/>
+  </resultMap>
+  <select id="getUnReadNoticeCount" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+    select count(1)
+    from notice
+    where targetid=#{targetid} and statue =0
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from notice
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <update id="updateStatue" parameterType="java.lang.Integer">
+    update notice
+    set statue =#{statue}
+    where id=#{id}
+  </update>
+  <insert id="insert" parameterType="com.gaoxiaobang.community.entity.Notice">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into notice (message, targetid, `type`, 
+      `time`,statue,url)
+    values (#{message,jdbcType=VARCHAR}, #{targetid,jdbcType=INTEGER}, #{type,jdbcType=TINYINT}, 
+      #{time,jdbcType=TIMESTAMP},#{statue,jdbcType=TINYINT},#{url,jdbcType=VARCHAR})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.gaoxiaobang.community.entity.Notice">
+    update notice
+    set message = #{message,jdbcType=VARCHAR},
+      targetid = #{targetid,jdbcType=INTEGER},
+      `type` = #{type,jdbcType=TINYINT},
+      `time` = #{time,jdbcType=TIMESTAMP},
+      statue=#{statue,jdbcType=TINYINT},
+      url=#{url,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select id, message, targetid, `type`, `time`,statue,url
+    from notice
+    where id = #{id,jdbcType=INTEGER} and statue =0
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id, message, targetid, `type`, `time`,statue,url
+    from notice
+  </select>
+  <select id="selectNoticeList" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+    select id, message, targetid, `type`, `time`,statue,url
+    from notice
+    where targetid=#{targetid}
+    order by 'time' desc
+  </select>
+</mapper>

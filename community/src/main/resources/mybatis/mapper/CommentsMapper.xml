@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaoxiaobang.community.dao.CommentsMapper">
+  <resultMap id="UserResultMap" type="com.gaoxiaobang.community.entity.Userinfo">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="nickname" jdbcType="VARCHAR" property="nickname" />
+    <result column="gender" jdbcType="TINYINT" property="gender" />
+    <result column="birthday" jdbcType="VARCHAR" property="birthday" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="identity" jdbcType="TINYINT" property="identity" />
+    <result column="schoolname" jdbcType="VARCHAR" property="schoolname" />
+    <result column="college" jdbcType="VARCHAR" property="college" />
+    <result column="re_statue" jdbcType="TINYINT" property="reStatue" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" javaType="java.util.Date" typeHandler="com.gaoxiaobang.community.common.typeHandler.TimestampTypeHandler"/>
+    <result column="score" jdbcType="INTEGER" property="score" />
+    <result column="statue" jdbcType="TINYINT" property="statue" />
+    <result column="headurl" jdbcType="VARCHAR" property="headurl" />
+    <result column="type" jdbcType="TINYINT" property="type" />
+  </resultMap>
+  <resultMap id="BaseResultMap" type="com.gaoxiaobang.community.entity.Comments">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="messageid" jdbcType="INTEGER" property="messageid" />
+    <result column="userid" jdbcType="INTEGER" property="userid" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+    <result column="time" jdbcType="TIMESTAMP" property="time" javaType="java.util.Date" typeHandler="com.gaoxiaobang.community.common.typeHandler.TimestampTypeHandler"/>
+    <result column="statue" jdbcType="TINYINT" property="statue" />
+    <result column="replyto" jdbcType="INTEGER" property="replyto"/>
+    <result column="type" jdbcType="TINYINT" property="type" />
+    <association property="user" select="com.gaoxiaobang.community.dao.UserinfoMapper.selectByPrimaryKey"  column="userid"/>
+    <association property="target" select="com.gaoxiaobang.community.dao.CommentsMapper.selectTarget"  column="replyto"/>
+  </resultMap>
+  <update id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    update  comments
+    set statue=1
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="selectTarget" parameterType="java.lang.Integer" resultType="com.gaoxiaobang.community.entity.Userinfo">
+    select nickname, gender, birthday,
+      email, `identity`, schoolname,
+      college, re_statue, create_time,
+      score, statue,headurl,`type`
+    from userinfo
+    where id=(select userid from comments where id=#{id})
+  </select>
+  <insert id="insert" parameterType="com.gaoxiaobang.community.entity.Comments">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into comments (messageid, userid, content, 
+      `time`, statue,replyto,`type`)
+    values (#{messageid,jdbcType=INTEGER}, #{userid,jdbcType=INTEGER}, #{content,jdbcType=VARCHAR}, 
+      #{time,jdbcType=TIMESTAMP}, #{statue,jdbcType=TINYINT},#{replyto,jdbcType=INTEGER},#{type,jdbcType=TINYINT})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.gaoxiaobang.community.entity.Comments">
+    update comments
+    set messageid = #{messageid,jdbcType=INTEGER},
+      userid = #{userid,jdbcType=INTEGER},
+      content = #{content,jdbcType=VARCHAR},
+      `time` = #{time,jdbcType=TIMESTAMP},
+      statue = #{statue,jdbcType=TINYINT},
+      replyto=#{replyto,jdbcType=INTEGER},
+       `type` = #{type,jdbcType=TINYINT}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select id, messageid, userid, content, `time`, statue,replyto, `type`
+    from comments
+    where id = #{id,jdbcType=INTEGER} and statue=0
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id, messageid, userid, content, `time`, statue,replyto，`type`
+    from comments
+    where statue=0
+  </select>
+  <!--通过messageid查找评论，type是1 表示评论主题的评论-->
+  <select id="selectByMessageId" resultMap="BaseResultMap">
+    select id, messageid, userid, content, `time`, statue,replyto,`type`
+    from comments
+    where messageid=#{messageid,jdbcType=INTEGER} and statue=0 and type=1 and replyto =0
+    order by `time`
+  </select>
+  <!--查询回复消息内容，根据replyto，replyto 0 表示不是回复，是评论主题的，replyto 非0 时表示评论 评论的，可以是回复给自己的或者别人回复你的,type类型是0表示是评论评论的评论-->
+  <select id="selectByReplyto" resultMap="BaseResultMap">
+    select id, messageid, userid, content, `time`, statue,replyto,`type`
+    from comments
+    where (replyto=#{replyto,jdbcType=INTEGER} and statue =0 and `type`=0 )or (id =#{replyto,jdbcType=INTEGER} and replyto=0 and statue =0 and `type`=0)
+    order by `time`
+  </select>
+</mapper>

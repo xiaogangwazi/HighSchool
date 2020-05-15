@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaoxiaobang.community.dao.FriendMapper">
+  <resultMap id="BaseResultMap" type="com.gaoxiaobang.community.entity.Friend">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="targetid" jdbcType="INTEGER" property="targetid" />
+    <result column="userid" jdbcType="INTEGER" property="userid" />
+    <result column="statue" jdbcType="INTEGER" property="statue" />
+    <association property="user"  select="com.gaoxiaobang.community.dao.UserinfoMapper.selectByPrimaryKey" column="userid"/>
+
+    <association property="friend"  select="com.gaoxiaobang.community.dao.UserinfoMapper.selectByPrimaryKey" column="targetid"/>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from friend
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+    <update id="updateStatue" parameterType="java.lang.Integer">
+        update  friend
+        set statue=#{statue}
+        where id=#{id}
+    </update>
+  <insert id="insert" parameterType="com.gaoxiaobang.community.entity.Friend">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into friend (targetid, userid, statue
+      )
+    values (#{targetid,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER}, #{statue,jdbcType=INTEGER}
+      )
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.gaoxiaobang.community.entity.Friend">
+    update friend
+    set userid = #{userId,jdbcType=INTEGER},
+      statue = #{statue,jdbcType=INTEGER},
+      friendid = #{targetid,jdbcType=INTEGER},
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select id,targetid, userid, statue
+    from friend
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id,targetid, userid, statue
+    from friend
+  </select>
+  <select id="getFriendList" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select id,targetid, userid, statue
+    from friend
+   where (userid=#{userid} or targetid =#{userid}) and statue =1
+  </select>
+  <update id="deleteFriend" parameterType="java.lang.Integer">
+    update  friend
+    set statue=1
+    where userid=#{userid} and targetid=#{targetid} and statue =0
+  </update>
+  <select id="selectByUserIdAndTargetId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select  id,targetid, userid, statue
+    from friend
+    where userid=#{userid} and targetid=#{targetid} and statue !=2
+  </select>
+</mapper>

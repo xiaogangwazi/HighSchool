@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaoxiaobang.community.dao.MessageMapper">
+  <resultMap id="UserResultMap" type="com.gaoxiaobang.community.entity.Userinfo">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="nickname" jdbcType="VARCHAR" property="nickname" />
+    <result column="gender" jdbcType="TINYINT" property="gender" />
+    <result column="birthday" jdbcType="VARCHAR" property="birthday" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="identity" jdbcType="TINYINT" property="identity" />
+    <result column="schoolname" jdbcType="VARCHAR" property="schoolname" />
+    <result column="college" jdbcType="VARCHAR" property="college" />
+    <result column="re_statue" jdbcType="TINYINT" property="reStatue" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" javaType="java.util.Date" typeHandler="com.gaoxiaobang.community.common.typeHandler.TimestampTypeHandler"/>
+    <result column="score" jdbcType="INTEGER" property="score" />
+    <result column="statue" jdbcType="TINYINT" property="statue" />
+    <result column="headurl" jdbcType="VARCHAR" property="headurl" />
+    <result column="type" jdbcType="TINYINT" property="type" />
+  </resultMap>
+  <resultMap id="BaseResultMap" type="com.gaoxiaobang.community.entity.Message">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="publicid" jdbcType="INTEGER" property="publicid" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+    <result column="topicname" jdbcType="VARCHAR" property="topicname" />
+    <result column="topicid" jdbcType="INTEGER" property="topicid" />
+    <result column="type" jdbcType="TINYINT" property="type" />
+    <result column="photo" jdbcType="VARCHAR" property="photo" />
+    <result column="public_time" jdbcType="TIMESTAMP" property="publictime" javaType="java.util.Date" typeHandler="com.gaoxiaobang.community.common.typeHandler.TimestampTypeHandler"/>
+    <result column="like" jdbcType="INTEGER" property="like" />
+    <result column="comments_count" jdbcType="INTEGER" property="commentsCount"/>
+    <result column="see" jdbcType="INTEGER" property="see"/>
+
+    <result column="statue" jdbcType="TINYINT" property="statue" />
+    <association property="user"  select="com.gaoxiaobang.community.dao.UserinfoMapper.selectByPrimaryKey" column="publicid"/>
+    </resultMap>
+    <select id="selectFocusMessage" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select id, publicid, title, content, topicname, topicid, `type`, photo, statue,public_time,`like`,comments_count,see
+        from message
+        where statue=2 and topicid in( select topicid from focustopic where userid=#{userid} and focus =1)
+    </select>
+  <update id="addSee" parameterType="java.lang.Integer">
+    update message
+    set see= see+1
+    where id=#{id}
+  </update>
+  <update id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    update  message
+    set statue=1
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="selectByTopicId" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+    select id, publicid, title, content, topicname, topicid, `type`, photo, statue,public_time,`like`,comments_count,see
+    from message
+    where topicid=#{topicid,jdbcType=INTEGER} and statue=2
+  </select>
+  <insert id="insert" parameterType="com.gaoxiaobang.community.entity.Message">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into message (publicid, title, content, 
+      topicname, topicid, `type`, 
+      photo, statue,public_time,`like`,comments_count,see)
+    values (#{publicid,jdbcType=INTEGER}, #{title,jdbcType=VARCHAR}, #{content,jdbcType=VARCHAR}, 
+      #{topicname,jdbcType=VARCHAR}, #{topicid,jdbcType=INTEGER}, #{type,jdbcType=TINYINT}, 
+      #{photo,jdbcType=VARCHAR}, #{statue,jdbcType=TINYINT},#{publictime,jdbcType=TIMESTAMP},#{like,jdbcType=INTEGER},#{commentsCount,jdbcType=INTEGER},#{see,jdbcType=INTEGER})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.gaoxiaobang.community.entity.Message">
+    update message
+    set publicid = #{publicid,jdbcType=INTEGER},
+      title = #{title,jdbcType=VARCHAR},
+      content = #{content,jdbcType=VARCHAR},
+      topicname = #{topicname,jdbcType=VARCHAR},
+      topicid = #{topicid,jdbcType=INTEGER},
+      `type` = #{type,jdbcType=TINYINT},
+      photo = #{photo,jdbcType=VARCHAR},
+      statue = #{statue,jdbcType=TINYINT},
+      public_time=#{publictime,jdbcType=TIMESTAMP},
+      `like`=#{like,jdbcType=INTEGER},
+      comments_count=#{commentsCount,jdbcType=INTEGER},
+       see=#{see,jdbcType=INTEGER}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select id, publicid, title, content, topicname, topicid, `type`, photo, statue,public_time,`like`,comments_count,see
+    from message
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id, publicid, title, content, topicname, topicid, `type`, photo, statue,public_time,`like`,comments_count,see
+    from message
+  </select>
+  <update id="addCount" parameterType="java.lang.Integer">
+        update message
+        set comments_count=comments_count+#{count}
+        where id =#{id}
+  </update>
+  <update id="addLike" >
+        update message
+        set `like`=`like`+#{count}
+        where id=#{id}
+  </update>
+
+
+</mapper>

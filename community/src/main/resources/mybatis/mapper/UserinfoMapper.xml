@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaoxiaobang.community.dao.UserinfoMapper">
+  <resultMap id="BaseResultMap" type="com.gaoxiaobang.community.entity.Userinfo">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="nickname" jdbcType="VARCHAR" property="nickname" />
+    <result column="gender" jdbcType="TINYINT" property="gender" />
+    <result column="birthday" jdbcType="VARCHAR" property="birthday" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="identity" jdbcType="TINYINT" property="identity" />
+    <result column="schoolname" jdbcType="VARCHAR" property="schoolname" />
+    <result column="college" jdbcType="VARCHAR" property="college" />
+    <result column="re_statue" jdbcType="TINYINT" property="reStatue" />
+    <result column="type" jdbcType="TINYINT" property="type" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime"  javaType="java.util.Date" typeHandler="com.gaoxiaobang.community.common.typeHandler.TimestampTypeHandler"/>
+    <result column="score" jdbcType="INTEGER" property="score" />
+    <result column="statue" jdbcType="TINYINT" property="statue" />
+    <result column="headurl" jdbcType="VARCHAR" property="headurl" />
+  </resultMap>
+  <select id="selectFocusedList" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+    select id, nickname, gender, birthday, email, `identity`, schoolname, college, re_statue,
+    create_time, score, statue,headurl,`type`
+    from userinfo
+    where userinfo.id in(select  userid from user_focus where targetid = #{targetid,jdbcType=INTEGER})
+  </select>
+  <select id="selectFocusList" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+    select id, nickname, gender, birthday, email, `identity`, schoolname, college, re_statue,
+    create_time, score, statue,headurl,`type`
+    from userinfo
+    where userinfo.id in(select  targetid from user_focus where userid = #{userid,jdbcType=INTEGER})
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from userinfo
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <update id="updateByHeaderUrlPrimaryKey">
+    update userinfo
+    set headurl=#{headurl}
+    where id =#{id}
+  </update>
+  <update id="addFriendsCount">
+  update userinfo
+  set friends_count=friends_count+#{count}
+  where id =#{id}
+  </update>
+  <update id="addScore">
+  update userinfo
+  set score=score+#{score}
+  where id =#{id}
+  </update>
+  <insert id="insert" parameterType="com.gaoxiaobang.community.entity.Userinfo">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into userinfo (nickname, gender, birthday, 
+      email, `identity`, schoolname, 
+      college, re_statue, create_time, 
+      score, statue,headurl,`type`)
+    values (#{nickname,jdbcType=VARCHAR}, #{gender,jdbcType=TINYINT}, #{birthday,jdbcType=VARCHAR}, 
+      #{email,jdbcType=VARCHAR}, #{identity,jdbcType=TINYINT}, #{schoolname,jdbcType=VARCHAR}, 
+      #{college,jdbcType=VARCHAR}, #{reStatue,jdbcType=TINYINT}, #{createTime,jdbcType=TIMESTAMP},
+      #{score,jdbcType=INTEGER}, #{statue,jdbcType=TINYINT},#{headurl,jdbcType=VARCHAR},#{type,jdbcType=TINYINT})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.gaoxiaobang.community.entity.Userinfo">
+    update userinfo
+    set
+    <if test=" nickname !=null and nickname !=''">
+      nickname = #{nickname,jdbcType=VARCHAR},
+    </if>
+    <if test=" gender !=null">
+      gender = #{gender,jdbcType=TINYINT},
+    </if>
+    <if test=" birthday !=null and birthday !=''">
+      birthday = #{birthday,jdbcType=VARCHAR},
+    </if>
+    <if test=" email !=null and email !=''">
+      email = #{email,jdbcType=VARCHAR},
+    </if>
+    <if test=" identity !=null and identity !=''">
+      `identity` = #{identity,jdbcType=TINYINT},
+    </if>
+    <if test=" schoolname !=null and schoolname !=''">
+      schoolname = #{schoolname,jdbcType=VARCHAR},
+    </if>
+    <if test=" college !=null">
+      college = #{college,jdbcType=VARCHAR},
+    </if>
+    <if test=" reStatue !=null">
+      re_statue = #{reStatue,jdbcType=TINYINT},
+    </if>
+    <if test=" score !=null">
+      score = #{score,jdbcType=INTEGER},
+    </if>
+
+    <if test=" statue !=null">
+      statue = #{statue,jdbcType=TINYINT},
+    </if>
+    <if test="type != null">
+      type =#{type,jdbcType=TINYINT}
+    </if>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <update id="updateStatueByPrimaryKey" parameterType="com.gaoxiaobang.community.entity.Userinfo">
+  update userinfo
+  set statue = #{statue,jdbcType=TINYINT},
+   where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select id, nickname, gender, birthday, email, `identity`, schoolname, college, re_statue, 
+    create_time, score, statue,headurl,`type`
+    from userinfo
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+
+  <select id="selectByEmail" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select id, nickname, gender, birthday, email, `identity`, schoolname, college, re_statue,
+    create_time, score, statue,headurl,`type`
+    from userinfo
+    where email = #{email,jdbcType=VARCHAR}
+  </select>
+
+  <select id="selectByNickname" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select *
+    from userinfo
+    where nickname = #{nickName}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id, nickname, gender, birthday, email, `identity`, schoolname, college, re_statue, 
+    create_time, score, statue,headurl,`type`
+    from userinfo
+  </select>
+</mapper>
